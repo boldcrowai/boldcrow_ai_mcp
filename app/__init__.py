@@ -1,0 +1,1 @@
+"""Bold Crow MCP package."""
