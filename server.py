@@ -1,3 +1,4 @@
+import logging
 import os
 
 import uvicorn
@@ -8,6 +9,11 @@ from app.prompts import register_prompts
 from app.resources import register_resources
 from app.tools import register_tools
 
+if not logging.root.handlers:
+    _lvl = getattr(
+        logging, os.getenv("LOG_LEVEL", "INFO").upper(), logging.INFO
+    )
+    logging.basicConfig(level=_lvl, format="%(levelname)s %(name)s: %(message)s")
 
 mcp_port = int(os.getenv("PORT", "8000"))
 railway_host = os.getenv("RAILWAY_PUBLIC_DOMAIN", "").strip()

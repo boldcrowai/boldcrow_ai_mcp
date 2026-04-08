@@ -88,14 +88,18 @@ https://web-production-919f2.up.railway.app/mcp
 - `SMTP_USERNAME`
 - `SMTP_PASSWORD`
 - `SMTP_FROM_EMAIL`
-- `LEAD_NOTIFICATION_EMAIL` (set to your notification inbox)
+- `LEAD_NOTIFICATION_EMAIL` (inbox that receives leads; required for email delivery together with the SMTP variables above)
+- `SMTP_USE_SSL` (optional; set to `true` for implicit TLS, e.g. port 465)
 - `MCP_BASE_URL`
 
 ## Lead routing
 
-Lead-capture tools send notifications to your configured inbox through SMTP.
-If SMTP is not configured yet, the tools still accept submissions and return
-a fallback message so no lead interaction is dropped at runtime.
+Lead-capture tools send notifications through SMTP when **all** of `SMTP_HOST`,
+`SMTP_PORT`, `SMTP_USERNAME`, `SMTP_PASSWORD`, `SMTP_FROM_EMAIL`, and
+`LEAD_NOTIFICATION_EMAIL` are set. Otherwise the submission is still accepted
+and the tool response explains that email is not active. Failed sends are
+logged with a full traceback in the server logs (Railway: **Deployments → your
+service → Logs**).
 
 ## Railway Deployment
 
