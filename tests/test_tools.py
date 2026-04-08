@@ -37,7 +37,7 @@ def test_request_website_audit_accepts_without_smtp():
     result = handle_request_website_audit(
         name="Dave",
         company="Bold Crow",
-        email="[redacted-email]",
+        email="audit@example.com",
         website_url="https://boldcrow.ai",
         audit_type="full",
         notes="Please review",

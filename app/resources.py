@@ -50,7 +50,7 @@ def register_resources(mcp: Any) -> None:
     @mcp.resource("boldcrow://contact/options")
     def contact_options() -> Dict[str, Any]:
         return {
-            "email": "[redacted-email]",
+            "email": "contact via /contact page",
             "contact_url": "https://boldcrow.ai/contact",
             "booking_url": "https://boldcrow.ai/book",
         }

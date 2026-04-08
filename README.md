@@ -46,12 +46,12 @@ This server does two jobs:
 - `SMTP_USERNAME`
 - `SMTP_PASSWORD`
 - `SMTP_FROM_EMAIL`
-- `LEAD_NOTIFICATION_EMAIL` (set to `[redacted-email]`)
+- `LEAD_NOTIFICATION_EMAIL` (set to your notification inbox)
 - `MCP_BASE_URL`
 
 ## Lead Routing
 
-Lead-capture tools send notifications to `[redacted-email]` through SMTP.
+Lead-capture tools send notifications to your configured inbox through SMTP.
 If SMTP is not configured yet, the tools still accept submissions and return
 a fallback message so no lead interaction is dropped at runtime.
 

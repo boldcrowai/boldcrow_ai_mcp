@@ -9,9 +9,7 @@ class Settings:
     smtp_username: str = os.getenv("SMTP_USERNAME", "")
     smtp_password: str = os.getenv("SMTP_PASSWORD", "")
     smtp_from_email: str = os.getenv("SMTP_FROM_EMAIL", "")
-    lead_notification_email: str = os.getenv(
-        "LEAD_NOTIFICATION_EMAIL", "[redacted-email]"
-    )
+    lead_notification_email: str = os.getenv("LEAD_NOTIFICATION_EMAIL", "")
     mcp_base_url: str = os.getenv("MCP_BASE_URL", "http://localhost:8000")
     app_env: str = os.getenv("APP_ENV", "development")
 
