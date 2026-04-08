@@ -28,14 +28,25 @@ def send_lead_email(lead_type: str, payload: Dict[str, Any]) -> Tuple[bool, str]
     msg["To"] = settings.lead_notification_email
 
     try:
-        with smtplib.SMTP(settings.smtp_host, settings.smtp_port, timeout=15) as server:
-            server.starttls()
-            server.login(settings.smtp_username, settings.smtp_password)
-            server.sendmail(
-                settings.smtp_from_email,
-                [settings.lead_notification_email],
-                msg.as_string(),
-            )
+        if settings.use_ssl_transport:
+            with smtplib.SMTP_SSL(
+                settings.smtp_host, settings.smtp_port, timeout=15
+            ) as server:
+                server.login(settings.smtp_username, settings.smtp_password)
+                server.sendmail(
+                    settings.smtp_from_email,
+                    [settings.lead_notification_email],
+                    msg.as_string(),
+                )
+        else:
+            with smtplib.SMTP(settings.smtp_host, settings.smtp_port, timeout=15) as server:
+                server.starttls()
+                server.login(settings.smtp_username, settings.smtp_password)
+                server.sendmail(
+                    settings.smtp_from_email,
+                    [settings.lead_notification_email],
+                    msg.as_string(),
+                )
         return True, "Lead notification sent successfully."
     except Exception as exc:
         return False, f"Lead captured but email send failed: {exc}"
