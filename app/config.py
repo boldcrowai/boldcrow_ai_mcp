@@ -26,8 +26,22 @@ class Settings:
         "on",
     }
     lead_notification_email: str = os.getenv("LEAD_NOTIFICATION_EMAIL", "")
+    resend_api_key: str = os.getenv("RESEND_API_KEY", "").strip()
+    resend_from_email: str = os.getenv("RESEND_FROM_EMAIL", "").strip()
     mcp_base_url: str = os.getenv("MCP_BASE_URL", "http://localhost:8000")
     app_env: str = os.getenv("APP_ENV", "development")
+
+    @property
+    def resend_from(self) -> str:
+        return self.resend_from_email or self.smtp_from_email
+
+    @property
+    def resend_enabled(self) -> bool:
+        return bool(
+            self.resend_api_key
+            and self.lead_notification_email.strip()
+            and self.resend_from.strip()
+        )
 
     @property
     def smtp_enabled(self) -> bool:
@@ -38,7 +52,7 @@ class Settings:
                 self.smtp_username,
                 self.smtp_password,
                 self.smtp_from_email,
-                self.lead_notification_email,
+                self.lead_notification_email.strip(),
             ]
         )
 

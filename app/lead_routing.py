@@ -2,12 +2,16 @@ import json
 import logging
 import smtplib
 import ssl
+import urllib.error
+import urllib.request
 from email.mime.text import MIMEText
 from typing import Any, Dict, List, Optional, Tuple
 
 from app.config import settings
 
 logger = logging.getLogger(__name__)
+
+RESEND_API_URL = "https://api.resend.com/emails"
 
 
 def _compose_subject(lead_type: str) -> str:
@@ -42,26 +46,66 @@ def _recipient_list() -> List[str]:
     return [addr.strip() for addr in raw.split(",") if addr.strip()]
 
 
-def send_lead_email(lead_type: str, payload: Dict[str, Any]) -> Tuple[bool, str]:
-    if not settings.smtp_enabled:
-        logger.warning(
-            "Lead email skipped: SMTP not fully configured "
-            "(need SMTP_HOST, SMTP_PORT, SMTP_USERNAME, SMTP_PASSWORD, "
-            "SMTP_FROM_EMAIL, LEAD_NOTIFICATION_EMAIL)"
+def _send_lead_via_resend(
+    lead_type: str,
+    payload: Dict[str, Any],
+    recipients: List[str],
+) -> Tuple[bool, str]:
+    from_addr = settings.resend_from.strip()
+    body: Dict[str, Any] = {
+        "from": from_addr,
+        "to": recipients,
+        "subject": _compose_subject(lead_type),
+        "text": _compose_body(lead_type, payload),
+    }
+    reply_to = _reply_to_address(payload)
+    if reply_to:
+        body["reply_to"] = reply_to
+
+    data = json.dumps(body).encode("utf-8")
+    req = urllib.request.Request(
+        RESEND_API_URL,
+        data=data,
+        headers={
+            "Authorization": f"Bearer {settings.resend_api_key}",
+            "Content-Type": "application/json",
+        },
+        method="POST",
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=30) as resp:
+            resp.read()
+        logger.info(
+            "Resend lead email accepted lead_type=%s recipients=%s",
+            lead_type,
+            recipients,
+        )
+        return True, "Lead notification sent successfully."
+    except urllib.error.HTTPError as exc:
+        err_body = exc.read().decode("utf-8", errors="replace")
+        logger.exception(
+            "Resend API error status=%s lead_type=%s body=%s",
+            exc.code,
+            lead_type,
+            err_body[:2000],
         )
         return (
             False,
-            "Email notifications are not fully configured on this server.",
+            "Lead captured, but the notification email could not be delivered.",
         )
-
-    recipients = _recipient_list()
-    if not recipients:
-        logger.warning("Lead email skipped: LEAD_NOTIFICATION_EMAIL is empty")
+    except OSError:
+        logger.exception("Resend request failed lead_type=%s", lead_type)
         return (
             False,
-            "Email notifications are not fully configured on this server.",
+            "Lead captured, but the notification email could not be delivered.",
         )
 
+
+def _send_lead_via_smtp(
+    lead_type: str,
+    payload: Dict[str, Any],
+    recipients: List[str],
+) -> Tuple[bool, str]:
     msg = MIMEText(_compose_body(lead_type, payload), "plain", "utf-8")
     msg["Subject"] = _compose_subject(lead_type)
     msg["From"] = settings.smtp_from_email
@@ -117,3 +161,28 @@ def send_lead_email(lead_type: str, payload: Dict[str, Any]) -> Tuple[bool, str]
             False,
             "Lead captured, but the notification email could not be delivered.",
         )
+
+
+def send_lead_email(lead_type: str, payload: Dict[str, Any]) -> Tuple[bool, str]:
+    recipients = _recipient_list()
+    if not recipients:
+        logger.warning("Lead email skipped: LEAD_NOTIFICATION_EMAIL is empty")
+        return (
+            False,
+            "Email notifications are not fully configured on this server.",
+        )
+
+    if settings.resend_enabled:
+        return _send_lead_via_resend(lead_type, payload, recipients)
+
+    if settings.smtp_enabled:
+        return _send_lead_via_smtp(lead_type, payload, recipients)
+
+    logger.warning(
+        "Lead email skipped: configure Resend (RESEND_API_KEY, RESEND_FROM_EMAIL, "
+        "LEAD_NOTIFICATION_EMAIL) or full SMTP plus LEAD_NOTIFICATION_EMAIL"
+    )
+    return (
+        False,
+        "Email notifications are not fully configured on this server.",
+    )
