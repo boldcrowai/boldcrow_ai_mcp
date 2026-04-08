@@ -1,5 +1,3 @@
-import os
-
 from mcp.server.fastmcp import FastMCP
 
 from app.prompts import register_prompts
@@ -21,8 +19,4 @@ register_prompts(mcp)
 
 
 if __name__ == "__main__":
-    mcp.run(
-        transport="streamable-http",
-        host="0.0.0.0",
-        port=int(os.getenv("PORT", "8000")),
-    )
+    mcp.run(transport="streamable-http")
