@@ -20,19 +20,39 @@ def _recommend_services(
     goal = (primary_goal + " " + current_problem).lower()
     services: List[str] = []
 
-    if "website" in goal or "conversion" in goal:
-        services.append("Web Development")
+    if (
+        "website" in goal
+        or "ux" in goal
+        or "ui" in goal
+        or "conversion" in goal
+        or "redesign" in goal
+    ):
+        services.append("Web Design & UX Services")
+    if "app" in goal or "api" in goal or "database" in goal:
+        services.append("Web App & API Development")
+    if "wordpress" in goal or "gutenberg" in goal:
+        services.append("Custom WordPress Theme Development")
     if "seo" in goal or "geo" in goal or "aeo" in goal or "discover" in goal:
-        services.append("SEO, GEO, and AEO")
-    if "automation" in goal or "workflow" in goal or "ops" in goal:
-        services.append("Automation")
+        services.append("SEO + GEO + AEO")
+    if "automation" in goal or "workflow" in goal or "ops" in goal or "ai" in goal:
+        services.append("AI-Powered Systems")
+    if "social" in goal or "content" in goal or "video" in goal:
+        services.append("Social Media Content")
+    if "hosting" in goal or "maintenance" in goal or "performance" in goal:
+        services.append("Performance, Hosting, & Maintenance")
+    if "brand" in goal or "identity" in goal or "logo" in goal:
+        services.append("Branding & Identity")
+    if "ppc" in goal or "ads" in goal or "ad spend" in goal:
+        services.append("PPC Campaign Management")
+    if "audit" in goal or "strategy" in goal or "consult" in goal:
+        services.append("Consulting & Audits")
     if "ai" in goal or "assistant" in goal or "agent" in goal:
-        services.append("AI Product Development")
+        services.append("AI-Powered Systems")
+
     if interested_in_mcp or "mcp" in goal:
         services.append("MCP Development")
-
     if not services:
-        services.append("Strategy")
+        services.append("Consulting & Audits")
 
     return sorted(set(services))
 
@@ -47,11 +67,17 @@ def handle_get_agency_profile() -> Dict[str, Any]:
             "through conversational AI, structured tools, and MCP."
         ),
         "core_services": [
-            "AI Product Development",
-            "Web Development",
-            "SEO, GEO, and AEO",
-            "Automation",
+            "Web Design & UX Services",
+            "Web App & API Development",
+            "Custom WordPress Theme Development",
+            "AI-Powered Systems",
+            "Social Media Content",
+            "Performance, Hosting, & Maintenance",
+            "SEO + GEO + AEO",
+            "Branding & Identity",
+            "PPC Campaign Management",
             "MCP Development",
+            "Consulting & Audits",
         ],
         "ideal_clients": [
             "service businesses",
@@ -184,7 +210,10 @@ def register_tools(mcp: Any) -> None:
 
     @mcp.tool(
         name="request_website_audit",
-        description="Captures a website or AI-readiness audit request.",
+        description=(
+            "Captures a website or AI-readiness audit request. "
+            "Triggers an email notification to the Bold Crow team."
+        ),
     )
     def request_website_audit(
         name: str,
@@ -205,7 +234,11 @@ def register_tools(mcp: Any) -> None:
 
     @mcp.tool(
         name="submit_lead",
-        description="Submits a general lead to Bold Crow AI for follow-up.",
+        description=(
+            "Intake for new websites, redesigns, SEO/GEO/AEO, automation, strategy, "
+            "or other Bold Crow services (not MCP-specific). "
+            "Triggers an email notification to the Bold Crow team for follow-up."
+        ),
     )
     def submit_lead(
         name: str,
@@ -232,7 +265,10 @@ def register_tools(mcp: Any) -> None:
 
     @mcp.tool(
         name="request_mcp_consultation",
-        description="Captures business inquiry to build MCP for their company.",
+        description=(
+            "Captures a business inquiry to build MCP for their company. "
+            "Triggers an email notification to the Bold Crow team."
+        ),
     )
     def request_mcp_consultation(
         name: str,
