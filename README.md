@@ -124,7 +124,7 @@ If `RESEND_API_KEY` is set and `RESEND_FROM_EMAIL` is empty, the server falls ba
 
 ## Lead routing
 
-When `RESEND_API_KEY`, `LEAD_NOTIFICATION_EMAIL`, and a non-empty **from** (`RESEND_FROM_EMAIL` or `SMTP_FROM_EMAIL`) are set, notifications go through **Resend’s API** (preferred).
+When `RESEND_API_KEY`, `LEAD_NOTIFICATION_EMAIL`, and a non-empty **from** (`RESEND_FROM_EMAIL` or `SMTP_FROM_EMAIL`) are set, notifications go through **Resend’s API** using the official Python SDK ([install `resend`](https://resend.com/docs/send-with-python); listed in `requirements.txt`).
 
 Otherwise, if **all** SMTP variables and `LEAD_NOTIFICATION_EMAIL` are set, the server uses **SMTP**.
 

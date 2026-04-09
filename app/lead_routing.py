@@ -2,16 +2,15 @@ import json
 import logging
 import smtplib
 import ssl
-import urllib.error
-import urllib.request
 from email.mime.text import MIMEText
 from typing import Any, Dict, List, Optional, Tuple
+
+import resend
+from resend.exceptions import ResendError
 
 from app.config import settings
 
 logger = logging.getLogger(__name__)
-
-RESEND_API_URL = "https://api.resend.com/emails"
 
 
 def _compose_subject(lead_type: str) -> str:
@@ -52,7 +51,9 @@ def _send_lead_via_resend(
     recipients: List[str],
 ) -> Tuple[bool, str]:
     from_addr = settings.resend_from.strip()
-    body: Dict[str, Any] = {
+    resend.api_key = settings.resend_api_key
+
+    params: resend.Emails.SendParams = {
         "from": from_addr,
         "to": recipients,
         "subject": _compose_subject(lead_type),
@@ -60,41 +61,35 @@ def _send_lead_via_resend(
     }
     reply_to = _reply_to_address(payload)
     if reply_to:
-        body["reply_to"] = reply_to
+        params["reply_to"] = reply_to
 
-    data = json.dumps(body).encode("utf-8")
-    req = urllib.request.Request(
-        RESEND_API_URL,
-        data=data,
-        headers={
-            "Authorization": f"Bearer {settings.resend_api_key}",
-            "Content-Type": "application/json",
-        },
-        method="POST",
-    )
     try:
-        with urllib.request.urlopen(req, timeout=30) as resp:
-            resp.read()
+        result = resend.Emails.send(params)
+        email_id = getattr(result, "id", None)
+        if email_id is None and isinstance(result, dict):
+            email_id = result.get("id")
         logger.info(
-            "Resend lead email accepted lead_type=%s recipients=%s",
+            "Resend lead email sent lead_type=%s resend_id=%s recipients=%s",
             lead_type,
+            email_id,
             recipients,
         )
         return True, "Lead notification sent successfully."
-    except urllib.error.HTTPError as exc:
-        err_body = exc.read().decode("utf-8", errors="replace")
-        logger.exception(
-            "Resend API error status=%s lead_type=%s body=%s",
-            exc.code,
+    except ResendError as exc:
+        logger.error(
+            "Resend send failed lead_type=%s code=%s error_type=%s message=%s",
             lead_type,
-            err_body[:2000],
+            exc.code,
+            exc.error_type,
+            exc.message,
+            exc_info=True,
         )
         return (
             False,
             "Lead captured, but the notification email could not be delivered.",
         )
-    except OSError:
-        logger.exception("Resend request failed lead_type=%s", lead_type)
+    except Exception:
+        logger.exception("Resend send failed unexpectedly lead_type=%s", lead_type)
         return (
             False,
             "Lead captured, but the notification email could not be delivered.",
