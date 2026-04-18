@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 from app.lead_routing import send_lead_email
 from app.schemas import get_service_catalog
@@ -247,9 +247,6 @@ def register_tools(mcp: Any) -> None:
         company: str = "",
         phone: str = "",
         website_url: str = "",
-        service_interest: Optional[List[str]] = None,
-        budget_range: str = "unknown",
-        timeline: str = "exploring",
     ) -> Dict[str, Any]:
         return handle_submit_lead(
             name=name,
@@ -257,10 +254,7 @@ def register_tools(mcp: Any) -> None:
             email=email,
             phone=phone,
             website_url=website_url,
-            service_interest=service_interest or [],
             project_summary=project_summary,
-            budget_range=budget_range,
-            timeline=timeline,
         )
 
     @mcp.tool(
@@ -277,8 +271,6 @@ def register_tools(mcp: Any) -> None:
         use_case: str,
         website_url: str = "",
         business_type: str = "",
-        needs_hosted_mcp: bool = True,
-        needs_directory_submission: bool = True,
         notes: str = "",
     ) -> Dict[str, Any]:
         return handle_request_mcp_consultation(
@@ -288,7 +280,5 @@ def register_tools(mcp: Any) -> None:
             website_url=website_url,
             business_type=business_type,
             use_case=use_case,
-            needs_hosted_mcp=needs_hosted_mcp,
-            needs_directory_submission=needs_directory_submission,
             notes=notes,
         )
